@@ -110,16 +110,30 @@ export class Client {
         return this.coboFetch("GET", "/v1/custody/is_valid_address/", params);
     };
 
+
     /***
      * get address history
      * @param coin: coin code
+     * @param pageIndex: which page. 0 is start page
+     * @param pageLength: page size <= 50
+     * @param sortFlag: 0:DESCENDING 1:ASCENDING
      */
-    getAddressHistory = (coin: string) => {
+     getAddressHistory = (coin: string, pageIndex?: null, pageLength?: null, sortFlag?:null) => {
         let params: any = {
             "coin": coin,
         };
+        if (pageIndex != null) {
+            params["page_index"] = pageIndex;
+        }
+        if (pageLength != null) {
+            params["page_length"] = pageLength;
+        }
+        if (sortFlag != null) {
+            params["sort_flag"] = sortFlag;
+        }
         return this.coboFetch("GET", "/v1/custody/address_history/", params);
     };
+
 
     /***
      * check loop address derails
@@ -160,6 +174,14 @@ export class Client {
             "id": id,
         };
         return this.coboFetch("GET", "/v1/custody/transaction/", params);
+    };
+
+    /***
+     * get transactions by txid
+     * @param txid : txid
+     */
+    getTransactionsByTxId = (txid: string) => {
+        return this.coboFetch("GET", "/v1/custody/transaction_by_txid/", {"txid": txid});
     };
 
     /***
