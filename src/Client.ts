@@ -4,6 +4,8 @@ import {LocalSigner} from "./LocalSigner";
 import {URLSearchParams} from "url"
 import {Env} from "./Env";
 import sha256 = require("sha256");
+import { Agent } from 'http';
+import { SocksProxyAgent } from 'socks-proxy-agent';
 
 export class Client {
     private readonly apiKey: string;
@@ -11,19 +13,24 @@ export class Client {
     private readonly host: string;
     private readonly signer: Signer;
     private readonly debug: boolean;
+    private readonly agent?: Agent;
 
     /***
      *
      * @param signer api signer
      * @param env SANDBOX or PROD
      * @param debug
+     * @param proxy
      */
-    constructor(signer: Signer, env: Env, debug: boolean = false) {
+    constructor(signer: Signer, env: Env, debug: boolean = false, proxy?: string) {
         this.apiKey = signer.getPublicKey();
         this.coboPub = env.coboPub;
         this.host = env.host;
         this.signer = signer;
         this.debug = debug;
+        if (proxy) {
+            this.agent = new SocksProxyAgent(proxy);
+        }
     }
 
     /***
@@ -340,7 +347,8 @@ export class Client {
             let url = this.host + path + '?' + sort_params;
             response = await fetch(url, {
                 headers: headers,
-                method: "GET"
+                method: "GET",
+                agent: this.agent,
             });
         } else if (method == 'POST') {
             let urlParams = new URLSearchParams();
@@ -354,7 +362,8 @@ export class Client {
             response = await fetch(this.host + path, {
                 method: method,
                 headers: headers,
-                body: urlParams
+                body: urlParams,
+                agent: this.agent,
             });
 
         } else {
